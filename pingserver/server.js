@@ -103,7 +103,8 @@ function cleanupOldLogs() {
       const logs = data.trim().split('\n').map(line => JSON.parse(line));
       const cutoffDate = new Date();
       //cutoffDate.setDate(cutoffDate.getDate() - 3);
-      cutoffDate.setHours(cutoffDate.getHours() - 1); // Set cutoff date to 1 hour ago
+      //cutoffDate.setHours(cutoffDate.getHours() - 1); // Set cutoff date to 1 hour ago
+      cutoffDate.setMinutes(cutoffDate.getMinutes() - 10);
 
       // Filter out logs older than 3 days
       const recentLogs = logs.filter(log => new Date(log.timestamp) > cutoffDate);
@@ -123,7 +124,7 @@ function cleanupOldLogs() {
 
 // Schedule the cleanup function to run daily
 //setInterval(cleanupOldLogs, 24 * 60 * 60 * 1000); // Every 24 hours
-setInterval(cleanupOldLogs, 60 * 60 * 1000); // Every 60 minutes
+setInterval(cleanupOldLogs, 10 * 60 * 1000); // Every 60 minutes
 
 // Start the server
 app.listen(port, '0.0.0.0', () => {
