@@ -1,12 +1,30 @@
 const express = require('express');
-const fs = require('fs');
 const path = require('path');
-
-const net = require('net');
+const winston = require('winston');
 
 const app = express();
 const port = 3000;
-const logFile = path.join(__dirname, 'ping_log.txt');
+const logFilePath = path.join(__dirname, 'ping_log.txt');
+
+// Set up Winston logger
+const logger = winston.createLogger({
+  level: 'info',
+  format: winston.format.combine(
+    winston.format.timestamp(),
+    winston.format.json()
+  ),
+  transports: [
+    // Log to a file
+    new winston.transports.File({ filename: logFilePath }),
+    // Also log to the console
+    new winston.transports.Console({
+      format: winston.format.combine(
+        winston.format.colorize(),
+        winston.format.simple()
+      )
+    })
+  ],
+});
 
 // Middleware to parse JSON bodies
 app.use(express.json());
@@ -14,16 +32,10 @@ app.use(express.json());
 app.get('/ping', (req, res) => {
   const timestamp = new Date().toISOString();
   const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-  const logEntry = `${timestamp} - Ping received from IP: ${ip}\n`;
+  const logEntry = `${timestamp} - Ping received from IP: ${ip}`;
 
-  // Append log entry to file
-  fs.appendFile(logFile, logEntry, (err) => {
-    if (err) {
-      console.error('Failed to write to log file', err);
-      res.status(500).send('Server error');
-      return;
-    }
-  });
+  // Log entry using Winston
+  logger.info(logEntry);
 
   res.status(200).send('Ping received');
 });
@@ -31,18 +43,10 @@ app.get('/ping', (req, res) => {
 app.post('/gps', (req, res) => {
   const timestamp = new Date().toISOString();
   const gpsData = req.body; // Expecting GPS data to be sent in the request body
+  const logEntry = `${timestamp} - Received GPS Data: ${JSON.stringify(gpsData)}`;
 
-  // Log the entire request body for detailed inspection
-  const logEntry = `${timestamp} - Received GPS Data: ${JSON.stringify(gpsData)}\n`;
-
-  // Append log entry to file
-  fs.appendFile(logFile, logEntry, (err) => {
-    if (err) {
-      console.error('Failed to write to log file', err);
-      res.status(500).send('Server error');
-      return;
-    }
-  });
+  // Log entry using Winston
+  logger.info(logEntry);
 
   res.status(200).send('GPS data received');
 });
@@ -50,18 +54,10 @@ app.post('/gps', (req, res) => {
 app.post('/', (req, res) => {
   const timestamp = new Date().toISOString();
   const gpsData = req.body; // Expecting GPS data to be sent in the request body
+  const logEntry = `${timestamp} - Received GPS Data: ${JSON.stringify(gpsData)}`;
 
-  // Log the entire request body for detailed inspection
-  const logEntry = `${timestamp} - Received GPS Data: ${JSON.stringify(gpsData)}\n`;
-
-  // Append log entry to file
-  fs.appendFile(logFile, logEntry, (err) => {
-    if (err) {
-      console.error('Failed to write to log file', err);
-      res.status(500).send('Server error');
-      return;
-    }
-  });
+  // Log entry using Winston
+  logger.info(logEntry);
 
   res.status(200).send('GPS data received');
 });
