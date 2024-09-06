@@ -90,6 +90,41 @@ app.get('/logs', (req, res) => {
   });
 });
 
+// Function to delete logs older than 3 days
+function cleanupOldLogs() {
+  fs.readFile(logFilePath, 'utf8', (err, data) => {
+    if (err) {
+      console.error('Failed to read log file for cleanup', err);
+      return;
+    }
+
+    try {
+      // Parse log file data to JSON
+      const logs = data.trim().split('\n').map(line => JSON.parse(line));
+      const cutoffDate = new Date();
+      //cutoffDate.setDate(cutoffDate.getDate() - 3);
+      cutoffDate.setHours(cutoffDate.getHours() - 1); // Set cutoff date to 1 hour ago
+
+      // Filter out logs older than 3 days
+      const recentLogs = logs.filter(log => new Date(log.timestamp) > cutoffDate);
+
+      // Write the filtered logs back to the file
+      const newLogData = recentLogs.map(log => JSON.stringify(log)).join('\n');
+      fs.writeFile(logFilePath, newLogData, 'utf8', (writeErr) => {
+        if (writeErr) {
+          console.error('Failed to write cleaned log file', writeErr);
+        }
+      });
+    } catch (parseError) {
+      console.error('Failed to parse log file for cleanup', parseError);
+    }
+  });
+}
+
+// Schedule the cleanup function to run daily
+//setInterval(cleanupOldLogs, 24 * 60 * 60 * 1000); // Every 24 hours
+setInterval(cleanupOldLogs, 60 * 60 * 1000); // Every 60 minutes
+
 // Start the server
 app.listen(port, '0.0.0.0', () => {
   console.log(`Server running at http://0.0.0.0:${port}/`);
