@@ -1,5 +1,6 @@
 const express = require('express');
 const path = require('path');
+const fs = require('fs');
 const winston = require('winston');
 
 const app = express();
@@ -32,7 +33,7 @@ app.use(express.json());
 app.get('/ping', (req, res) => {
   const timestamp = new Date().toISOString();
   const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-  const logEntry = `${timestamp} - Ping received from IP: ${ip}`;
+  const logEntry = { timestamp, message: `Ping received from IP: ${ip}` };
 
   // Log entry using Winston
   logger.info(logEntry);
@@ -43,7 +44,7 @@ app.get('/ping', (req, res) => {
 app.post('/gps', (req, res) => {
   const timestamp = new Date().toISOString();
   const gpsData = req.body; // Expecting GPS data to be sent in the request body
-  const logEntry = `${timestamp} - Received GPS Data: ${JSON.stringify(gpsData)}`;
+  const logEntry = { timestamp, message: `Received GPS Data: ${JSON.stringify(gpsData)}` };
 
   // Log entry using Winston
   logger.info(logEntry);
@@ -54,12 +55,32 @@ app.post('/gps', (req, res) => {
 app.post('/', (req, res) => {
   const timestamp = new Date().toISOString();
   const gpsData = req.body; // Expecting GPS data to be sent in the request body
-  const logEntry = `${timestamp} - Received GPS Data: ${JSON.stringify(gpsData)}`;
+  const logEntry = { timestamp, message: `Received GPS Data: ${JSON.stringify(gpsData)}` };
 
   // Log entry using Winston
   logger.info(logEntry);
 
   res.status(200).send('GPS data received');
+});
+
+// Endpoint to get log data in JSON format
+app.get('/logs', (req, res) => {
+  fs.readFile(logFilePath, 'utf8', (err, data) => {
+    if (err) {
+      console.error('Failed to read log file', err);
+      res.status(500).send('Server error');
+      return;
+    }
+    
+    try {
+      // Parse log file data to JSON
+      const logs = data.trim().split('\n').map(line => JSON.parse(line));
+      res.json(logs);
+    } catch (parseError) {
+      console.error('Failed to parse log file', parseError);
+      res.status(500).send('Error parsing log file');
+    }
+  });
 });
 
 // Start the server
