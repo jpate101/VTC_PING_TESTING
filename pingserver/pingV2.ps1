@@ -1,29 +1,39 @@
-# Define the server URL
 $url = "http://192.168.20.45:3000/ping"
+# $url = "http://http://180.150.100.57:3000/ping"
 
-# Get the system name
-$systemName = $env:COMPUTERNAME
+# Retrieve the computer name
+$computerName = $env:COMPUTERNAME
 
-# Define the interval in seconds
-$interval = 20
+# Function to send a ping request
+function Send-Ping {
+    param (
+        [string]$url,
+        [string]$computerName
+    )
 
-# Loop indefinitely
-while ($true) {
-    try {
-        # Create the payload
-        $payload = @{
-            systemName = $systemName
-        } | ConvertTo-Json
-
-        # Send the POST request
-        $response = Invoke-WebRequest -Uri $url -Method Post -Body $payload -ContentType "application/json"
-
-        # Write the response status
-        Write-Host "Ping sent successfully. Response status: $($response.StatusCode)"
-    } catch {
-        Write-Host "Failed to ping server: $_"
+    $body = @{
+        timestamp = (Get-Date).ToString("o")
+        systemName = $computerName
+        message = "Ping from $computerName"
     }
 
-    # Wait for the specified interval before sending the next ping
-    Start-Sleep -Seconds $interval
+    # Convert the body to JSON format
+    $jsonBody = $body | ConvertTo-Json
+
+    try {
+        # Send the HTTP POST request
+        $response = Invoke-WebRequest -Uri $url -Method Post -Body $jsonBody -ContentType "application/json" -ErrorAction SilentlyContinue
+        # Suppress output to prevent pop-ups
+        $null = $response
+    } catch {
+        # Handle errors silently or log them
+        # Optionally write to a log file
+        $null = $_
+    }
+}
+
+# Run the function every 20 seconds
+while ($true) {
+    Send-Ping -url $url -computerName $computerName
+    Start-Sleep -Seconds 3
 }

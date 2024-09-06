@@ -43,6 +43,9 @@ app.post('/ping', (req, res) => {
   logger.info(logEntry);
 
   res.status(200).send('Ping received');
+
+  // Send only a status code with no body
+  //res.sendStatus(204); // 204 No Content
 });
 
 app.post('/gps', (req, res) => {
