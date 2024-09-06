@@ -90,48 +90,53 @@ app.get('/logs', (req, res) => {
   });
 });
 
-// Function to delete logs older than 3 days
+// Function to delete logs older than 2 mins 
 function cleanupOldLogs() {
+  // Read the log file
   fs.readFile(logFilePath, 'utf8', (err, data) => {
     if (err) {
-      console.error('Failed to read log file for cleanup', err);
+      console.error('Failed to read log file', err);
       return;
     }
 
+    // Parse log file data to JSON
+    let logs;
     try {
-      // Split data into lines and attempt to parse each line
-      const logs = data.trim().split('\n').reduce((acc, line) => {
-        try {
-          const log = JSON.parse(line);
-          acc.push(log);
-        } catch (parseError) {
-          console.warn('Skipping malformed log entry:', line);
-        }
-        return acc;
-      }, []);
-      
-      const cutoffDate = new Date();
-      cutoffDate.setMinutes(cutoffDate.getMinutes() - 10); // Set cutoff date to 10 minutes ago
-
-      // Filter out logs older than 10 minutes
-      const recentLogs = logs.filter(log => new Date(log.timestamp) > cutoffDate);
-
-      // Write the filtered logs back to the file
-      const newLogData = recentLogs.map(log => JSON.stringify(log)).join('\n');
-      fs.writeFile(logFilePath, newLogData, 'utf8', (writeErr) => {
-        if (writeErr) {
-          console.error('Failed to write cleaned log file', writeErr);
-        }
-      });
+      logs = data.trim().split('\n').map(line => JSON.parse(line));
     } catch (parseError) {
-      console.error('Failed to parse log file for cleanup', parseError);
+      console.error('Failed to parse log file', parseError);
+      return;
     }
+
+    // Get current time
+    const now = new Date();
+
+    // Filter out logs older than 2 minutes
+    const filteredLogs = logs.filter(log => {
+      const logTime = new Date(log.timestamp);
+      const age = now - logTime;
+      return age <= 24 * 60 * 60 * 1000; // last day of data is kept
+    });
+
+    // Prepare the updated log data
+    const updatedLogData = filteredLogs.map(log => JSON.stringify(log)).join('\n');
+
+    // Append a newline indicating the cleanup operation
+    const cleanupMetadata = `\n`;
+    const finalLogData = updatedLogData + cleanupMetadata;
+
+    // Write the filtered logs and metadata back to the file
+    fs.writeFile(logFilePath, finalLogData, 'utf8', (writeErr) => {
+      if (writeErr) {
+        console.error('Failed to write log file', writeErr);
+      }
+    });
   });
 }
 
 // Schedule the cleanup function to run daily
-//setInterval(cleanupOldLogs, 24 * 60 * 60 * 1000); // Every 24 hours
-setInterval(cleanupOldLogs, 10 * 60 * 1000); // Every 60 minutes
+setInterval(cleanupOldLogs, 12 * 60 * 60 * 1000); // Every 12 hours
+//setInterval(cleanupOldLogs, 1 * 60 * 1000); // Every 60 minutes
 
 // Start the server
 app.listen(port, '0.0.0.0', () => {
