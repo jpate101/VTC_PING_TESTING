@@ -1,2 +1,4 @@
 {"level":"info","message":"2024-09-06T00:00:24.726Z - Ping received from IP: 192.168.20.45","timestamp":"2024-09-06T00:00:24.728Z"}
 {"level":"info","message":"Ping received from IP: 192.168.20.45","timestamp":"2024-09-06T00:16:17.750Z"}
+{"level":"info","message":"2024-09-06T00:32:30.792Z - Ping received from system: WINJAMAICA-NS","timestamp":"2024-09-06T00:32:30.793Z"}
+{"level":"info","message":"Ping received","systemName":"WINJAMAICA-NS","timestamp":"2024-09-06T00:34:30.323Z"}

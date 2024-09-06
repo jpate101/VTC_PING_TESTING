@@ -30,10 +30,14 @@ const logger = winston.createLogger({
 // Middleware to parse JSON bodies
 app.use(express.json());
 
-app.get('/ping', (req, res) => {
+app.post('/ping', (req, res) => {
   const timestamp = new Date().toISOString();
-  const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-  const logEntry = { timestamp, message: `Ping received from IP: ${ip}` };
+  const systemName = req.body.systemName || 'Unknown';
+  const logEntry = {
+    timestamp: timestamp,
+    systemName: systemName,
+    message: 'Ping received'
+  };
 
   // Log entry using Winston
   logger.info(logEntry);
