@@ -99,14 +99,21 @@ function cleanupOldLogs() {
     }
 
     try {
-      // Parse log file data to JSON
-      const logs = data.trim().split('\n').map(line => JSON.parse(line));
+      // Split data into lines and attempt to parse each line
+      const logs = data.trim().split('\n').reduce((acc, line) => {
+        try {
+          const log = JSON.parse(line);
+          acc.push(log);
+        } catch (parseError) {
+          console.warn('Skipping malformed log entry:', line);
+        }
+        return acc;
+      }, []);
+      
       const cutoffDate = new Date();
-      //cutoffDate.setDate(cutoffDate.getDate() - 3);
-      //cutoffDate.setHours(cutoffDate.getHours() - 1); // Set cutoff date to 1 hour ago
-      cutoffDate.setMinutes(cutoffDate.getMinutes() - 10);
+      cutoffDate.setMinutes(cutoffDate.getMinutes() - 10); // Set cutoff date to 10 minutes ago
 
-      // Filter out logs older than 3 days
+      // Filter out logs older than 10 minutes
       const recentLogs = logs.filter(log => new Date(log.timestamp) > cutoffDate);
 
       // Write the filtered logs back to the file
