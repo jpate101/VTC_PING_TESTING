@@ -34,4 +34,4 @@ def send_ping(url, computer_name):
 # Run the function every 20 seconds
 while True:
     send_ping(url, computer_name)
-    time.sleep(15)
+    time.sleep(5)

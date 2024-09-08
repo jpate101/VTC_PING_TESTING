@@ -7,6 +7,7 @@ const app = express();
 const port = 3000;
 const logFilePath = path.join(__dirname, 'ping_log.txt');
 
+
 // Set up Winston logger
 const logger = winston.createLogger({
   level: 'info',
@@ -49,14 +50,29 @@ app.post('/ping', (req, res) => {
 });
 
 app.post('/gps', (req, res) => {
-  const timestamp = new Date().toISOString();
-  const gpsData = req.body; // Expecting GPS data to be sent in the request body
-  const logEntry = { timestamp, message: `Received GPS Data: ${JSON.stringify(gpsData)}` };
+  // Extract data from the request body
+  const { timestamp, systemName, latitude, longitude } = req.body;
 
-  // Log entry using Winston
-  logger.info(logEntry);
+  // Check if all required fields are present
+  if (timestamp && systemName && latitude !== undefined && longitude !== undefined) {
+    // Create a log entry using the client's timestamp
+    const logEntry = {
+      timestamp,
+      systemName,
+      latitude,
+      longitude
+    };
 
-  res.status(200).send('GPS data received');
+    // Log entry using Winston
+    logger.info(logEntry);
+
+    res.status(200).send('GPS data received');
+  } else {
+    // Handle missing or malformed data
+    const errorMessage = 'Invalid GPS data or missing timestamp';
+    logger.error({ timestamp: new Date().toISOString(), message: errorMessage });
+    res.status(400).send(errorMessage);
+  }
 });
 
 app.post('/', (req, res) => {
@@ -115,7 +131,8 @@ function cleanupOldLogs() {
     const filteredLogs = logs.filter(log => {
       const logTime = new Date(log.timestamp);
       const age = now - logTime;
-      return age <= 24 * 60 * 60 * 1000; // last day of data is kept
+      //return age <= 24 * 60 * 60 * 1000; // last day of data is kept
+      return age <= 2 * 60 * 1000; // last day of data is kept
     });
 
     // Prepare the updated log data
@@ -135,55 +152,10 @@ function cleanupOldLogs() {
 }
 
 // Schedule the cleanup function to run daily
-setInterval(cleanupOldLogs, 12 * 60 * 60 * 1000); // Every 12 hours
-//setInterval(cleanupOldLogs, 1 * 60 * 1000); // Every 60 minutes
+//setInterval(cleanupOldLogs, 12 * 60 * 60 * 1000); // Every 12 hours
+setInterval(cleanupOldLogs, 1 * 60 * 1000); // 
 
 // Start the server
 app.listen(port, '0.0.0.0', () => {
   console.log(`Server running at http://0.0.0.0:${port}/`);
 });
-
-
-
-//app.listen(port, '192.168.20.45', () => {
-//    console.log(`Server running at http://192.168.20.45:${port}/`);
-//  });
-
-
-// TCP server
-/*
-const tcpServer = net.createServer((socket) => {
-  const timestamp = new Date().toISOString();
-  const remoteAddress = socket.remoteAddress;
-
-  console.log(`${timestamp} - Connection from ${remoteAddress}`);
-  const logEntry = `${timestamp} - Connection from ${remoteAddress}\n`;
-  fs.appendFile(logFile, logEntry, (err) => {
-    if (err) {
-      console.error('Failed to write to log file', err);
-    }
-  });
-
-  socket.on('data', (data) => {
-    const dataString = data.toString();
-    console.log(`${timestamp} - Data received: ${dataString}`);
-    const dataLogEntry = `${timestamp} - Data received: ${dataString}\n`;
-    fs.appendFile(logFile, dataLogEntry, (err) => {
-      if (err) {
-        console.error('Failed to write to log file', err);
-      }
-    });
-  });
-
-  socket.on('end', () => {
-    console.log(`${timestamp} - Connection ended`);
-  });
-
-  socket.on('error', (err) => {
-    console.error('Connection error:', err.message);
-  });
-});
-
-tcpServer.listen(port, '0.0.0.0', () => {
-  console.log(`TCP server listening on port ${port}`);
-});*/
