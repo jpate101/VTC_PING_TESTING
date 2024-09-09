@@ -51,7 +51,7 @@ app.post('/ping', (req, res) => {
   //res.sendStatus(204); // 204 No Content
 });
 
-app.post('/gps', (req, res) => {
+/*app.post('/gps', (req, res) => {
   logger.info({
     message: 'Raw GPS request received',
     headers: req.headers,
@@ -61,6 +61,16 @@ app.post('/gps', (req, res) => {
   });
 
   // Do not send any response
+});*/
+
+app.use(express.text({ type: 'application/vnd.teltonika.nmea' }));
+
+app.post('/gps', (req, res) => {
+  // Log the raw text data received
+  logger.info({ message: 'Raw GPS data received', data: req.body });
+
+  // Do not send any response
+  // res.status(200).send('GPS data received'); // Comment out or remove this line
 });
 
 app.post('/', (req, res) => {
