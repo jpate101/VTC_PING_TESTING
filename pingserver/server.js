@@ -2,6 +2,7 @@ const express = require('express');
 const path = require('path');
 const fs = require('fs');
 const winston = require('winston');
+const querystring = require('querystring'); 
 
 const app = express();
 const port = 3000;
@@ -65,17 +66,23 @@ app.use(express.text({ type: 'application/vnd.teltonika.nmea' }));
 });*/
 
 app.post('/gps', (req, res) => {
-  // Extract required values from the request body
-  const { imei, time, latitude, longitude, altitude } = req.body;
+  // Log raw text data for debugging
+  console.log('Received raw data:', req.body);
+
+  // Parse the raw text data
+  const parsedData = querystring.parse(req.body);
+
+  // Extract required values from the parsed data
+  const { imei, time, latitude, longitude, altitude } = parsedData;
 
   // Check if all required values are present
   if (imei && time && latitude && longitude && altitude) {
     const gpsLogEntry = {
       imei: imei,
-      //time: time,
-      //latitude: latitude,
-      //longitude: longitude,
-      //altitude: altitude,
+      time: time,
+      latitude: latitude,
+      longitude: longitude,
+      altitude: altitude,
       timestamp: new Date().toISOString()
     };
 
