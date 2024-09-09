@@ -52,7 +52,7 @@ app.post('/ping', (req, res) => {
 });
 // Middleware to parse raw text data
 app.use(express.text({ type: 'application/vnd.teltonika.nmea' }));
-/*app.post('/gps', (req, res) => {
+app.post('/gps', (req, res) => {
   logger.info({
     message: 'Raw GPS request received',
     headers: req.headers,
@@ -62,51 +62,7 @@ app.use(express.text({ type: 'application/vnd.teltonika.nmea' }));
   });
 
   // Do not send any response
-});*/
-
-// Function to parse $GPGGA sentence
-function parseGPGGA(sentence) {
-  const parts = sentence.split(',');
-
-  if (parts[0] !== '$GPGGA') return null;
-
-  const time = parts[1];
-  const latitude = parseFloat(parts[2]) * (parts[3] === 'N' ? 1 : -1);
-  const longitude = parseFloat(parts[4]) * (parts[5] === 'E' ? 1 : -1);
-  const altitude = parseFloat(parts[9]);
-
-  return {
-    time: time ? `${time.slice(0, 2)}:${time.slice(2, 4)}:${time.slice(4, 6)}` : null, // Format time as HH:MM:SS
-    latitude,
-    longitude,
-    altitude
-  };
-}
-
-app.post('/gps', (req, res) => {
-  const gpsData = req.body;
-
-  // Split the data into lines
-  const lines = gpsData.split('\n');
-
-  // Filter and parse $GPGGA sentences
-  const gpggaLines = lines.filter(line => line.startsWith('$GPGGA'));
-  const parsedGPGGAData = gpggaLines.map(parseGPGGA);
-
-  // Create a unified log entry with all parsed data
-  const logEntry = {
-    timestamp: new Date().toISOString(),
-    type: 'GPS',
-    data: parsedGPGGAData
-  };
-
-  // Log entry using Winston
-  logger.info(logEntry);
-
-  // Do not send any response
-  // res.status(200).send('GPS data received'); // Comment out or remove this line
 });
-
 app.post('/', (req, res) => {
   const timestamp = new Date().toISOString();
   const gpsData = req.body; // Expecting GPS data to be sent in the request body
