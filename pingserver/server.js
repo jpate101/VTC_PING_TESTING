@@ -52,7 +52,7 @@ app.post('/ping', (req, res) => {
 });
 // Middleware to parse raw text data
 app.use(express.text({ type: 'application/vnd.teltonika.nmea' }));
-app.post('/gps', (req, res) => {
+/*app.post('/gps', (req, res) => {
   logger.info({
     message: 'Raw GPS request received',
     headers: req.headers,
@@ -62,7 +62,42 @@ app.post('/gps', (req, res) => {
   });
 
   // Do not send any response
+});*/
+
+app.post('/gps', (req, res) => {
+  // Extract required values from the request body
+  const { imei, time, latitude, longitude, altitude } = req.body;
+
+  // Check if all required values are present
+  if (imei && time && latitude && longitude && altitude) {
+    const gpsLogEntry = {
+      imei: imei,
+      time: time,
+      latitude: latitude,
+      longitude: longitude,
+      altitude: altitude,
+      timestamp: new Date().toISOString()
+    };
+
+    // Log entry using Winston
+    logger.info({
+      message: 'GPS Data received',
+      data: gpsLogEntry
+    });
+
+    // Send a response indicating success
+    res.status(200).send('GPS data received and logged');
+  } else {
+    // If required values are missing, log an error and send a bad request response
+    logger.error({
+      message: 'Incomplete GPS data received',
+      body: req.body
+    });
+
+    res.status(400).send('Missing required GPS data');
+  }
 });
+
 app.post('/', (req, res) => {
   const timestamp = new Date().toISOString();
   const gpsData = req.body; // Expecting GPS data to be sent in the request body
