@@ -72,10 +72,10 @@ app.post('/gps', (req, res) => {
   if (imei && time && latitude && longitude && altitude) {
     const gpsLogEntry = {
       imei: imei,
-      time: time,
-      latitude: latitude,
-      longitude: longitude,
-      altitude: altitude,
+      //time: time,
+      //latitude: latitude,
+      //longitude: longitude,
+      //altitude: altitude,
       timestamp: new Date().toISOString()
     };
 
