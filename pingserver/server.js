@@ -94,7 +94,8 @@ app.post('/gps', (req, res) => {
   logger.info({
     type: '/GPS',
     body: req.body,
-    imei: modifiedUrl
+    imei: modifiedUrl,
+    latitude: latitude
   });
 
   // Do not send any response
