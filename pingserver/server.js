@@ -64,7 +64,7 @@ app.post('/gps', (req, res) => {
 
   logger.info({
     headers: req.headers,
-    url: modifiedUrl
+    imei: modifiedUrl
 
   });
 
