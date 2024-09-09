@@ -100,7 +100,8 @@ app.post('/gps', (req, res) => {
     type: '/GPS',
     body: req.body,
     imei: modifiedUrl,
-    latitude: latitude
+    latitude: latitude,
+    longitude: longitude
   });
 
   // Do not send any response
