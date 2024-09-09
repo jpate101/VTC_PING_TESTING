@@ -63,11 +63,107 @@ app.post('/ping', (req, res) => {
   // Do not send any response
 });*/
 
+// Middleware to parse raw text data
 app.use(express.text({ type: 'application/vnd.teltonika.nmea' }));
 
+// Function to parse $GPGSV sentence
+function parseGPGSV(sentence) {
+  const parts = sentence.split(',');
+
+  if (parts[0] !== '$GPGSV') return null;
+
+  const satellitesInView = parts[3];
+  const satelliteDetails = parts.slice(4).map((_, index) => {
+    if (index % 4 === 0) {
+      return {
+        prn: parts[index + 1],
+        elevation: parts[index + 2],
+        azimuth: parts[index + 3],
+        snr: parts[index + 4]
+      };
+    }
+  }).filter(Boolean);
+
+  return { satellitesInView, satelliteDetails };
+}
+
+// Function to parse $GPGGA sentence
+function parseGPGGA(sentence) {
+  const parts = sentence.split(',');
+
+  if (parts[0] !== '$GPGGA') return null;
+
+  return {
+    latitude: parseFloat(parts[2]) * (parts[3] === 'N' ? 1 : -1),
+    longitude: parseFloat(parts[4]) * (parts[5] === 'E' ? 1 : -1),
+    altitude: parseFloat(parts[9])
+  };
+}
+
+// Function to parse $GPRMC sentence
+function parseGPRMC(sentence) {
+  const parts = sentence.split(',');
+
+  if (parts[0] !== '$GPRMC') return null;
+
+  return {
+    latitude: parseFloat(parts[3]) * (parts[4] === 'N' ? 1 : -1),
+    longitude: parseFloat(parts[5]) * (parts[6] === 'E' ? 1 : -1),
+    speed: parseFloat(parts[7]),
+    course: parseFloat(parts[8])
+  };
+}
+
 app.post('/gps', (req, res) => {
-  // Log the raw text data received
-  logger.info({ message: 'Raw GPS data received', data: req.body });
+  const gpsData = req.body;
+
+  // Split the data into lines
+  const lines = gpsData.split('\n');
+
+  // Filter and parse sentences
+  const gpgsvLines = lines.filter(line => line.startsWith('$GPGSV'));
+  const gpggaLines = lines.filter(line => line.startsWith('$GPGGA'));
+  const gprmcLines = lines.filter(line => line.startsWith('$GPRMC'));
+
+  const parsedGPGSVData = gpgsvLines.map(parseGPGSV);
+  const parsedGPGGAData = gpggaLines.map(parseGPGGA);
+  const parsedGPRMCData = gprmcLines.map(parseGPRMC);
+
+  // Log each parsed $GPGSV data
+  parsedGPGSVData.forEach(data => {
+    if (data) {
+      logger.info({
+        message: 'GPGSV Data',
+        satellitesInView: data.satellitesInView,
+        satelliteDetails: data.satelliteDetails
+      });
+    }
+  });
+
+  // Log each parsed $GPGGA data
+  parsedGPGGAData.forEach(data => {
+    if (data) {
+      logger.info({
+        message: 'GPGGA Data',
+        latitude: data.latitude,
+        longitude: data.longitude,
+        altitude: data.altitude
+      });
+    }
+  });
+
+  // Log each parsed $GPRMC data
+  parsedGPRMCData.forEach(data => {
+    if (data) {
+      logger.info({
+        message: 'GPRMC Data',
+        latitude: data.latitude,
+        longitude: data.longitude,
+        speed: data.speed,
+        course: data.course
+      });
+    }
+  });
 
   // Do not send any response
   // res.status(200).send('GPS data received'); // Comment out or remove this line
