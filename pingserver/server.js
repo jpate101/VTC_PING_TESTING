@@ -80,12 +80,14 @@ app.post('/gps', (req, res) => {
         time = parts[1];
         latitude = convertToDecimal(parts[2], parts[3]);
         console.log(parts);
+        console.log(parts[8]);
+        console.log("----------");
         break;
-      case 'GNGNS': // GNSS Fix Data (similar to GPGGA)
-        time = parts[1];
-        latitude = convertToDecimal(parts[2], parts[3]);
-        console.log(parts);
-        break;
+      //case 'GNGNS': // GNSS Fix Data (similar to GPGGA)
+        //time = parts[1];
+        //latitude = convertToDecimal(parts[2], parts[3]);
+        //console.log(parts);
+        //break;
       // Add more cases for other sentence types if needed
     }
   });
