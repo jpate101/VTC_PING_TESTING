@@ -66,13 +66,15 @@ app.use(express.text({ type: 'application/vnd.teltonika.nmea' }));
 });*/
 
 app.post('/gps', (req, res) => {
+  // Extract IMEI from query parameters (default to 'Unknown' if not present)
+  const imei = req.query.imei || 'Unknown';
+
   // Log raw text data for debugging
   console.log('Received raw data:', req.body);
 
   // Split the raw data into individual NMEA sentences
   const sentences = req.body.split('\n').filter(sentence => sentence.trim().startsWith('$'));
 
-  let imei = 'Unknown'; // Placeholder value if IMEI extraction is needed
   let time = 'Unknown';
   let latitude = 'Unknown';
   let longitude = 'Unknown';
@@ -84,16 +86,15 @@ app.post('/gps', (req, res) => {
 
     switch (type) {
       case 'GPGGA': // Global Positioning System Fix Data
-        // Example: $GPGGA,220600.00,2725.975549,S,15308.305734,E,1,07,1.2,34.5,M,47.0,M,,*4A
         time = parts[1];
-        latitude = parseFloat(parts[2]) / 100; // Convert latitude to decimal
-        longitude = parseFloat(parts[4]) / 100; // Convert longitude to decimal
+        latitude = convertToDecimal(parts[2], parts[3]);
+        longitude = convertToDecimal(parts[4], parts[5]);
         altitude = parts[9];
         break;
       case 'GNGNS': // GNSS Fix Data (similar to GPGGA)
         time = parts[1];
-        latitude = parseFloat(parts[2]) / 100; // Convert latitude to decimal
-        longitude = parseFloat(parts[4]) / 100; // Convert longitude to decimal
+        latitude = convertToDecimal(parts[2], parts[3]);
+        longitude = convertToDecimal(parts[4], parts[5]);
         altitude = parts[9];
         break;
       // Add more cases for other sentence types if needed
@@ -101,9 +102,9 @@ app.post('/gps', (req, res) => {
   });
 
   // Check if all required values are present
-  if (time && latitude && longitude && altitude) {
+  if (time !== 'Unknown' && latitude !== 'Unknown' && longitude !== 'Unknown' && altitude !== 'Unknown') {
     const gpsLogEntry = {
-      imei: imei, // Placeholder, as IMEI is not extracted from raw data
+      imei: imei, // Extracted from query parameters
       time: time,
       latitude: latitude,
       longitude: longitude,
@@ -129,6 +130,22 @@ app.post('/gps', (req, res) => {
     res.status(400).send('Missing required GPS data');
   }
 });
+
+// Convert latitude/longitude from NMEA format to decimal degrees
+function convertToDecimal(value, direction) {
+  if (value === 'Unknown' || direction === 'Unknown') return 'Unknown';
+  
+  const degrees = parseFloat(value.substring(0, 2));
+  const minutes = parseFloat(value.substring(2));
+  let decimal = degrees + (minutes / 60);
+  
+  // Apply sign based on direction (latitude and longitude signs are different)
+  if (direction === 'S') {
+    decimal = -decimal;
+  }
+
+  return decimal.toFixed(6); // Limit to 6 decimal places for precision
+}
 
 app.post('/', (req, res) => {
   const timestamp = new Date().toISOString();
