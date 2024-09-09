@@ -54,12 +54,18 @@ app.post('/ping', (req, res) => {
 // Middleware to parse raw text data
 app.use(express.text({ type: 'application/vnd.teltonika.nmea' }));
 app.post('/gps', (req, res) => {
+
+  let modifiedUrl = req.url.substring(5);
+
+  const ampIndex = modifiedUrl.indexOf('&');
+  if (ampIndex !== -1) {
+    modifiedUrl = modifiedUrl.substring(0, ampIndex);
+  }
+
   logger.info({
-    message: 'Raw GPS request received',
     headers: req.headers,
-    body: req.body,
-    method: req.method,
-    url: req.url
+    url: modifiedUrl
+
   });
 
   // Do not send any response
