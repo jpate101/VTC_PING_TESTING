@@ -52,29 +52,11 @@ app.post('/ping', (req, res) => {
 });
 
 app.post('/gps', (req, res) => {
-  // Extract data from the request body
-  const { timestamp, systemName, latitude, longitude } = req.body;
+  // Log the entire raw request body
+  logger.info({ message: 'Raw GPS data received', data: req.body });
 
-  // Check if all required fields are present
-  if (timestamp && systemName && latitude !== undefined && longitude !== undefined) {
-    // Create a log entry using the client's timestamp
-    const logEntry = {
-      timestamp,
-      systemName,
-      latitude,
-      longitude
-    };
-
-    // Log entry using Winston
-    logger.info(logEntry);
-
-    res.status(200).send('GPS data received');
-  } else {
-    // Handle missing or malformed data
-    const errorMessage = 'Invalid GPS data or missing timestamp';
-    logger.error({ timestamp: new Date().toISOString(), message: errorMessage });
-    res.status(400).send(errorMessage);
-  }
+  // Do not send any response
+  // res.status(200).send('GPS data received'); // Remove this line
 });
 
 app.post('/', (req, res) => {
