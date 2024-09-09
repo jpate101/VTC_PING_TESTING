@@ -52,11 +52,15 @@ app.post('/ping', (req, res) => {
 });
 
 app.post('/gps', (req, res) => {
-  // Log the entire raw request body
-  logger.info({ message: 'Raw GPS data received', data: req.body });
+  logger.info({
+    message: 'Raw GPS request received',
+    headers: req.headers,
+    body: req.body,
+    method: req.method,
+    url: req.url
+  });
 
   // Do not send any response
-  // res.status(200).send('GPS data received'); // Remove this line
 });
 
 app.post('/', (req, res) => {
