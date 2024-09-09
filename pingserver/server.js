@@ -62,10 +62,11 @@ app.post('/gps', (req, res) => {
     modifiedUrl = modifiedUrl.substring(0, ampIndex);
   }
 
-  logger.info({
-    headers: req.headers,
-    imei: modifiedUrl
 
+  logger.info({
+    type: '/GPS',
+    body: req.body,
+    imei: modifiedUrl
   });
 
   // Do not send any response
