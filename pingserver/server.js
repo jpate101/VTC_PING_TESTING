@@ -79,9 +79,11 @@ app.post('/gps', (req, res) => {
       case 'GPGGA': // Global Positioning System Fix Data
         time = parts[1];
         latitude = convertToDecimal(parts[2], parts[3]);
+        longitude = convertToDecimal(parts[4], parts[5]);
         console.log(parts);
         console.log("-----");
         console.log(parts[4]);
+        console.log(parts[5]);
         console.log("----------");
         break;
       //case 'GNGNS': // GNSS Fix Data (similar to GPGGA)
