@@ -66,51 +66,22 @@ app.post('/ping', (req, res) => {
 // Middleware to parse raw text data
 app.use(express.text({ type: 'application/vnd.teltonika.nmea' }));
 
-// Function to parse $GPGSV sentence
-function parseGPGSV(sentence) {
-  const parts = sentence.split(',');
-
-  if (parts[0] !== '$GPGSV') return null;
-
-  const satellitesInView = parts[3];
-  const satelliteDetails = parts.slice(4).map((_, index) => {
-    if (index % 4 === 0) {
-      return {
-        prn: parts[index + 1],
-        elevation: parts[index + 2],
-        azimuth: parts[index + 3],
-        snr: parts[index + 4]
-      };
-    }
-  }).filter(Boolean);
-
-  return { satellitesInView, satelliteDetails };
-}
-
 // Function to parse $GPGGA sentence
 function parseGPGGA(sentence) {
   const parts = sentence.split(',');
 
   if (parts[0] !== '$GPGGA') return null;
 
-  return {
-    latitude: parseFloat(parts[2]) * (parts[3] === 'N' ? 1 : -1),
-    longitude: parseFloat(parts[4]) * (parts[5] === 'E' ? 1 : -1),
-    altitude: parseFloat(parts[9])
-  };
-}
-
-// Function to parse $GPRMC sentence
-function parseGPRMC(sentence) {
-  const parts = sentence.split(',');
-
-  if (parts[0] !== '$GPRMC') return null;
+  const time = parts[1];
+  const latitude = parseFloat(parts[2]) * (parts[3] === 'N' ? 1 : -1);
+  const longitude = parseFloat(parts[4]) * (parts[5] === 'E' ? 1 : -1);
+  const altitude = parseFloat(parts[9]);
 
   return {
-    latitude: parseFloat(parts[3]) * (parts[4] === 'N' ? 1 : -1),
-    longitude: parseFloat(parts[5]) * (parts[6] === 'E' ? 1 : -1),
-    speed: parseFloat(parts[7]),
-    course: parseFloat(parts[8])
+    time: time ? `${time.slice(0, 2)}:${time.slice(2, 4)}:${time.slice(4, 6)}` : null, // Format time as HH:MM:SS
+    latitude,
+    longitude,
+    altitude
   };
 }
 
@@ -120,47 +91,19 @@ app.post('/gps', (req, res) => {
   // Split the data into lines
   const lines = gpsData.split('\n');
 
-  // Filter and parse sentences
-  const gpgsvLines = lines.filter(line => line.startsWith('$GPGSV'));
+  // Filter and parse $GPGGA sentences
   const gpggaLines = lines.filter(line => line.startsWith('$GPGGA'));
-  const gprmcLines = lines.filter(line => line.startsWith('$GPRMC'));
-
-  const parsedGPGSVData = gpgsvLines.map(parseGPGSV);
   const parsedGPGGAData = gpggaLines.map(parseGPGGA);
-  const parsedGPRMCData = gprmcLines.map(parseGPRMC);
-
-  // Log each parsed $GPGSV data
-  parsedGPGSVData.forEach(data => {
-    if (data) {
-      logger.info({
-        message: 'GPGSV Data',
-        satellitesInView: data.satellitesInView,
-        satelliteDetails: data.satelliteDetails
-      });
-    }
-  });
 
   // Log each parsed $GPGGA data
   parsedGPGGAData.forEach(data => {
     if (data) {
       logger.info({
         message: 'GPGGA Data',
+        time: data.time,
         latitude: data.latitude,
         longitude: data.longitude,
         altitude: data.altitude
-      });
-    }
-  });
-
-  // Log each parsed $GPRMC data
-  parsedGPRMCData.forEach(data => {
-    if (data) {
-      logger.info({
-        message: 'GPRMC Data',
-        latitude: data.latitude,
-        longitude: data.longitude,
-        speed: data.speed,
-        course: data.course
       });
     }
   });
