@@ -55,12 +55,40 @@ app.post('/ping', (req, res) => {
 app.use(express.text({ type: 'application/vnd.teltonika.nmea' }));
 app.post('/gps', (req, res) => {
 
+  //imei formatting 
   let modifiedUrl = req.url.substring(5);
 
   const ampIndex = modifiedUrl.indexOf('&');
   if (ampIndex !== -1) {
     modifiedUrl = modifiedUrl.substring(0, ampIndex);
   }
+
+  // 
+  let time = 'Unknown';
+  let latitude = 'Unknown';
+  let longitude = 'Unknown';
+  let altitude = 'Unknown';
+
+  //
+  const sentences = req.body.split('\n').filter(sentence => sentence.trim().startsWith('$'));
+  sentences.forEach(sentence => {
+    const parts = sentence.split(',');
+    const type = sentence.substring(1, 6); // Extract the sentence type, e.g., 'GPGGA'
+
+    switch (type) {
+      case 'GPGGA': // Global Positioning System Fix Data
+        time = parts[1];
+        latitude = convertToDecimal(parts[2], parts[3]);
+        console.log(parts);
+        break;
+      case 'GNGNS': // GNSS Fix Data (similar to GPGGA)
+        time = parts[1];
+        latitude = convertToDecimal(parts[2], parts[3]);
+        console.log(parts);
+        break;
+      // Add more cases for other sentence types if needed
+    }
+  });
 
 
   logger.info({
@@ -136,7 +164,7 @@ app.post('/gps', (req, res) => {
     res.status(400).send('Missing required GPS data');
   }
 });
-
+*/
 // Convert latitude/longitude from NMEA format to decimal degrees
 function convertToDecimal(value, direction) {
   if (value === 'Unknown' || direction === 'Unknown') return 'Unknown';
@@ -152,7 +180,7 @@ function convertToDecimal(value, direction) {
 
   return decimal.toFixed(6); // Limit to 6 decimal places for precision
 }
-*/
+
 app.post('/', (req, res) => {
   const timestamp = new Date().toISOString();
   const gpsData = req.body; // Expecting GPS data to be sent in the request body
