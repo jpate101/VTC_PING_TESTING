@@ -67,14 +67,13 @@ app.use(express.text({ type: 'application/vnd.teltonika.nmea' }));
 
 app.post('/gps', (req, res) => {
   // Extract IMEI from query parameters (default to 'Unknown' if not present)
-  const imei = req.query.imei || 'Unknown';
 
   // Log raw text data for debugging
   console.log('Received raw data:', req.body);
 
   // Split the raw data into individual NMEA sentences
   const sentences = req.body.split('\n').filter(sentence => sentence.trim().startsWith('$'));
-
+  let imei = 'Unknown'
   let time = 'Unknown';
   let latitude = 'Unknown';
   let longitude = 'Unknown';
