@@ -51,9 +51,8 @@ app.post('/ping', (req, res) => {
   //res.sendStatus(204); // 204 No Content
 });
 // Middleware to parse raw text data
-//app.use(express.text({ type: 'application/vnd.teltonika.nmea' }));
-
-app.post('/gps', (req, res) => {
+app.use(express.text({ type: 'application/vnd.teltonika.nmea' }));
+/*app.post('/gps', (req, res) => {
   logger.info({
     message: 'Raw GPS request received',
     headers: req.headers,
@@ -63,9 +62,126 @@ app.post('/gps', (req, res) => {
   });
 
   // Do not send any response
+});*/
+
+// Function to parse $GPGGA sentence
+function parseGPGGA(sentence) {
+  const parts = sentence.split(',');
+
+  if (parts[0] !== '$GPGGA') return null;
+
+  const time = parts[1];
+  const latitude = parseFloat(parts[2]) * (parts[3] === 'N' ? 1 : -1);
+  const longitude = parseFloat(parts[4]) * (parts[5] === 'E' ? 1 : -1);
+  const altitude = parseFloat(parts[9]);
+
+  return {
+    time: time ? `${time.slice(0, 2)}:${time.slice(2, 4)}:${time.slice(4, 6)}` : null, // Format time as HH:MM:SS
+    latitude,
+    longitude,
+    altitude
+  };
+}
+
+app.post('/gps', (req, res) => {
+  const gpsData = req.body;
+
+  // Split the data into lines
+  const lines = gpsData.split('\n');
+
+  // Filter and parse $GPGGA sentences
+  const gpggaLines = lines.filter(line => line.startsWith('$GPGGA'));
+  const parsedGPGGAData = gpggaLines.map(parseGPGGA);
+
+  // Create a unified log entry with all parsed data
+  const logEntry = {
+    timestamp: new Date().toISOString(),
+    type: 'GPS',
+    data: parsedGPGGAData
+  };
+
+  // Log entry using Winston
+  logger.info(logEntry);
+
+  // Do not send any response
+  // res.status(200).send('GPS data received'); // Comment out or remove this line
 });
 
+app.post('/', (req, res) => {
+  const timestamp = new Date().toISOString();
+  const gpsData = req.body; // Expecting GPS data to be sent in the request body
+  const logEntry = { timestamp, message: `Received GPS Data: ${JSON.stringify(gpsData)}` };
 
+  // Log entry using Winston
+  logger.info(logEntry);
+
+  res.status(200).send('GPS data received');
+});
+
+// Endpoint to get log data in JSON format
+app.get('/logs', (req, res) => {
+  fs.readFile(logFilePath, 'utf8', (err, data) => {
+    if (err) {
+      console.error('Failed to read log file', err);
+      res.status(500).send('Server error');
+      return;
+    }
+    
+    try {
+      // Parse log file data to JSON
+      const logs = data.trim().split('\n').map(line => JSON.parse(line));
+      res.json(logs);
+    } catch (parseError) {
+      console.error('Failed to parse log file', parseError);
+      res.status(500).send('Error parsing log file');
+    }
+  });
+});
+
+// Function to delete logs older than 2 mins 
+function cleanupOldLogs() {
+  // Read the log file
+  fs.readFile(logFilePath, 'utf8', (err, data) => {
+    if (err) {
+      console.error('Failed to read log file', err);
+      return;
+    }
+
+    // Parse log file data to JSON
+    let logs;
+    try {
+      logs = data.trim().split('\n').map(line => JSON.parse(line));
+    } catch (parseError) {
+      console.error('Failed to parse log file', parseError);
+      return;
+    }
+
+    // Get current time
+    const now = new Date();
+
+    // Filter out logs older than 2 minutes
+    const filteredLogs = logs.filter(log => {
+      const logTime = new Date(log.timestamp);
+      const age = now - logTime;
+      //return age <= 24 * 60 * 60 * 1000; // last day of data is kept
+      return age <= 2 * 60 * 1000; // last day of data is kept
+    });
+
+    // Prepare the updated log data
+    const updatedLogData = filteredLogs.map(log => JSON.stringify(log)).join('\n');
+
+    // Append a newline indicating the cleanup operation
+    const cleanupMetadata = `\n`;
+    const finalLogData = updatedLogData + cleanupMetadata;
+
+    // Write the filtered logs and metadata back to the file
+    fs.writeFile(logFilePath, finalLogData, 'utf8', (writeErr) => {
+      if (writeErr) {
+        console.error('Failed to write log file', writeErr);
+      }
+    });
+  });
+}
 
 // Schedule the cleanup function to run daily
 //setInterval(cleanupOldLogs, 12 * 60 * 60 * 1000); // Every 12 hours
