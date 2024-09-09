@@ -51,7 +51,8 @@ app.post('/ping', (req, res) => {
   //res.sendStatus(204); // 204 No Content
 });
 // Middleware to parse raw text data
-app.use(express.text({ type: 'application/vnd.teltonika.nmea' }));
+//app.use(express.text({ type: 'application/vnd.teltonika.nmea' }));
+
 app.post('/gps', (req, res) => {
   logger.info({
     message: 'Raw GPS request received',
