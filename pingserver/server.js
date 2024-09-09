@@ -80,6 +80,7 @@ app.post('/gps', (req, res) => {
         time = parts[1];
         latitude = convertToDecimal(parts[2], parts[3]);
         console.log(parts);
+        console.log("-----");
         console.log(parts[4]);
         console.log("----------");
         break;
