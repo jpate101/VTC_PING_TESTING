@@ -69,16 +69,41 @@ app.post('/gps', (req, res) => {
   // Log raw text data for debugging
   console.log('Received raw data:', req.body);
 
-  // Parse the raw text data
-  const parsedData = querystring.parse(req.body);
+  // Split the raw data into individual NMEA sentences
+  const sentences = req.body.split('\n').filter(sentence => sentence.trim().startsWith('$'));
 
-  // Extract required values from the parsed data
-  const { imei, time, latitude, longitude, altitude } = parsedData;
+  let imei = 'Unknown'; // Placeholder value if IMEI extraction is needed
+  let time = 'Unknown';
+  let latitude = 'Unknown';
+  let longitude = 'Unknown';
+  let altitude = 'Unknown';
+
+  sentences.forEach(sentence => {
+    const parts = sentence.split(',');
+    const type = sentence.substring(1, 6); // Extract the sentence type, e.g., 'GPGGA'
+
+    switch (type) {
+      case 'GPGGA': // Global Positioning System Fix Data
+        // Example: $GPGGA,220600.00,2725.975549,S,15308.305734,E,1,07,1.2,34.5,M,47.0,M,,*4A
+        time = parts[1];
+        latitude = parseFloat(parts[2]) / 100; // Convert latitude to decimal
+        longitude = parseFloat(parts[4]) / 100; // Convert longitude to decimal
+        altitude = parts[9];
+        break;
+      case 'GNGNS': // GNSS Fix Data (similar to GPGGA)
+        time = parts[1];
+        latitude = parseFloat(parts[2]) / 100; // Convert latitude to decimal
+        longitude = parseFloat(parts[4]) / 100; // Convert longitude to decimal
+        altitude = parts[9];
+        break;
+      // Add more cases for other sentence types if needed
+    }
+  });
 
   // Check if all required values are present
-  if (imei && time && latitude && longitude && altitude) {
+  if (time && latitude && longitude && altitude) {
     const gpsLogEntry = {
-      imei: imei,
+      imei: imei, // Placeholder, as IMEI is not extracted from raw data
       time: time,
       latitude: latitude,
       longitude: longitude,
