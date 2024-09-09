@@ -34,6 +34,8 @@ app.use(express.json());
 app.post('/ping', (req, res) => {
   const timestamp = new Date().toISOString();
   const systemName = req.body.systemName || 'Unknown';
+  const latitude = req.body.latitude || 'Unknown';
+  const longitude = req.body.longitude || 'Unknown';
   const logEntry = {
     timestamp: timestamp,
     systemName: systemName,

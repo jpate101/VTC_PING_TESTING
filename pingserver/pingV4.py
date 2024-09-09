@@ -8,13 +8,12 @@ import time
 DEVICE_IP = '192.168.1.1'
 USERNAME = 'admin'
 PASSWORD = 'MudM45t3r'
-SERVER_URL_PING = 'https://vtc-ping-testing.onrender.com/ping'  # URL for ping
-SERVER_URL_GPS = 'https://vtc-ping-testing.onrender.com/gps'   # URL for GPS
+PING_URL = "https://vtc-ping-testing.onrender.com/ping"
 
 # Retrieve the computer name
 computer_name = platform.node()
 
-# Global variable to store the token
+# Global variable for the authentication token
 token = None
 
 def login_to_teltonika():
@@ -79,37 +78,28 @@ def get_gps_data():
         print(f'Error fetching GPS data: {e}')
         return None
 
-def send_ping(url, system_name):
+def send_ping(url, computer_name, gps_data):
     body = {
+        "MSG type": "Ping",
         "timestamp": datetime.utcnow().isoformat(),
-        "systemName": system_name,
-        "message": f"Ping from {system_name}"
+        "systemName": computer_name,
+        "message": f"Ping from {computer_name}",
+        "latitude": gps_data.get('latitude'),
+        "longitude": gps_data.get('longitude')
     }
+
     headers = {"Content-Type": "application/json"}
 
     try:
+        # Send the HTTP POST request
         response = requests.post(url, data=json.dumps(body), headers=headers)
         response.raise_for_status()
     except requests.RequestException as e:
+        # Handle errors silently
         print(f'Error sending ping: {e}')
 
-def send_gps_data(url, system_name):
-    gps_data = get_gps_data()
-    if gps_data is not None:
-        body = {
-            "timestamp": datetime.utcnow().isoformat(),
-            "systemName": system_name,
-            **gps_data
-        }
-        headers = {"Content-Type": "application/json"}
-        try:
-            response = requests.post(url, data=json.dumps(body), headers=headers)
-            response.raise_for_status()
-        except requests.RequestException as e:
-            print(f'Error sending GPS data: {e}')
-
-# Run the functions periodically
+# Run the function every 20 seconds
 while True:
-    send_ping(SERVER_URL_PING, computer_name)
-    send_gps_data(SERVER_URL_GPS, computer_name)
-    time.sleep(60)  # Adjust the interval as needed
+    gps_data = get_gps_data()
+    send_ping(PING_URL, computer_name, gps_data or {})
+    time.sleep(20)

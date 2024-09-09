@@ -15,6 +15,7 @@ computer_name = platform.node()
 # Function to send a ping request
 def send_ping(url, computer_name):
     body = {
+        "MSG type": "Ping",
         "timestamp": datetime.utcnow().isoformat(),
         "systemName": computer_name,
         "message": f"Ping from {computer_name}"
