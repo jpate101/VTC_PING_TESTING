@@ -53,7 +53,7 @@ app.post('/ping', (req, res) => {
 });
 // Middleware to parse raw text data
 app.use(express.text({ type: 'application/vnd.teltonika.nmea' }));
-/*app.post('/gps', (req, res) => {
+app.post('/gps', (req, res) => {
   logger.info({
     message: 'Raw GPS request received',
     headers: req.headers,
@@ -63,9 +63,9 @@ app.use(express.text({ type: 'application/vnd.teltonika.nmea' }));
   });
 
   // Do not send any response
-});*/
+});
 
-app.post('/gps', (req, res) => {
+/*app.post('/gps', (req, res) => {
   // Extract IMEI from query parameters (default to 'Unknown' if not present)
 
   // Log raw text data for debugging
@@ -145,7 +145,7 @@ function convertToDecimal(value, direction) {
 
   return decimal.toFixed(6); // Limit to 6 decimal places for precision
 }
-
+*/
 app.post('/', (req, res) => {
   const timestamp = new Date().toISOString();
   const gpsData = req.body; // Expecting GPS data to be sent in the request body
