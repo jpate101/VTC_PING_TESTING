@@ -79,6 +79,12 @@ app.post('/gps', (req, res) => {
       case 'GPGGA': // Global Positioning System Fix Data
         time = parts[1];
         latitude = convertToDecimal(parts[2], parts[3]);
+
+        /*longitude = parts[4]/100;
+        if ( parts[5] == 'W') {
+          longitude = -longitude;
+        }*/
+
         console.log(parts);
         console.log("-----");
         console.log(parts[4]);
