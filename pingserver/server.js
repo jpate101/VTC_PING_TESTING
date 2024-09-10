@@ -54,7 +54,7 @@ app.post('/ping', (req, res) => {
 // Middleware to parse raw text data
 app.use(express.text({ type: 'application/vnd.teltonika.nmea' }));
 app.post('/gps', (req, res) => {
-
+/*
   //imei formatting 
   let modifiedUrl = req.url.substring(5);
 
@@ -80,10 +80,10 @@ app.post('/gps', (req, res) => {
         time = parts[1];
         latitude = convertToDecimal(parts[2], parts[3]);
 
-        /*longitude = parts[4]/100;
+        longitude = parts[4]/100;
         if ( parts[5] == 'W') {
           longitude = -longitude;
-        }*/
+        }
 
         console.log(parts);
         console.log("-----");
@@ -98,15 +98,15 @@ app.post('/gps', (req, res) => {
         //break;
       // Add more cases for other sentence types if needed
     }
-  });
+  });*/
 
 
   logger.info({
     type: '/GPS',
     body: req.body,
-    imei: modifiedUrl,
-    latitude: latitude,
-    longitude: longitude
+    //imei: modifiedUrl,
+    //latitude: latitude,
+    //longitude: longitude
   });
 
   // Do not send any response
