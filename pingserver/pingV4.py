@@ -1,15 +1,15 @@
 import requests
 import json
-from datetime import datetime
 import platform
 import time
+from datetime import datetime, timezone
 
 # Configuration
 DEVICE_IP = '192.168.1.1'
 USERNAME = 'admin'
 PASSWORD = 'MudM45t3r'
-#PING_URL = "https://vtc-ping-testing.onrender.com/ping"
-PING_URL = "http://192.168.20.45:3000/ping"
+PING_URL = "https://vtc-ping-testing.onrender.com/ping"
+#PING_URL = "http://192.168.20.45:3000/ping"
 
 # Retrieve the computer name
 computer_name = platform.node()
@@ -70,7 +70,6 @@ def get_gps_data():
         result = response.json().get('result', [])
         if len(result) > 1:
             stdout = result[1].get('stdout', '')
-            latitude, longitude = map(float, stdout.strip().split())
             try:
                 latitude, longitude = map(float, stdout.strip().split())
                 if latitude == 0 and longitude == 0:
@@ -90,7 +89,7 @@ def get_gps_data():
 def send_ping(url, computer_name, gps_data):
     body = {
         "MSG type": "Ping",
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "systemName": computer_name,
         "message": f"Ping from {computer_name}",
         "latitude": gps_data.get('latitude'),
@@ -111,4 +110,4 @@ def send_ping(url, computer_name, gps_data):
 while True:
     gps_data = get_gps_data()
     send_ping(PING_URL, computer_name, gps_data or {})
-    time.sleep(20)
+    time.sleep(60)
