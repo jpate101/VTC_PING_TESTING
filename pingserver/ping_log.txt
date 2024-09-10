@@ -1,2 +1,0 @@
-{"level":"info","message":"Ping received","systemName":"WINJAMAICA-NS","timestamp":"2024-09-08T21:19:17.238Z"}
-
