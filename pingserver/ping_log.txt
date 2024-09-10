@@ -1,0 +1,2 @@
+{"latitude":"Unknown","level":"info","longitude":"Unknown","message":"Ping received","systemName":"WINJAMAICA-NS","timestamp":"2024-09-10T22:27:21.642Z"}
+{"latitude":-27.432827,"level":"info","longitude":153.138665,"message":"Ping received","systemName":"WINJAMAICA-NS","timestamp":"2024-09-10T22:27:41.663Z"}

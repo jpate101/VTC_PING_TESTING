@@ -5,9 +5,9 @@ import platform
 import time
 
 # URL of the server
-#url = "http://192.168.20.45:3000/ping"
+url = "http://192.168.20.45:3000/ping"
 # url = "http://180.150.100.57:3000/ping"  # Uncomment this if you want to use this URL
-url = "https://vtc-ping-testing.onrender.com/ping"
+#url = "https://vtc-ping-testing.onrender.com/ping"
 
 # Retrieve the computer name
 computer_name = platform.node()

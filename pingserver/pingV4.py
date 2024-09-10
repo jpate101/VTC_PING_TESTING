@@ -8,7 +8,8 @@ import time
 DEVICE_IP = '192.168.1.1'
 USERNAME = 'admin'
 PASSWORD = 'MudM45t3r'
-PING_URL = "https://vtc-ping-testing.onrender.com/ping"
+#PING_URL = "https://vtc-ping-testing.onrender.com/ping"
+PING_URL = "http://192.168.20.45:3000/ping"
 
 # Retrieve the computer name
 computer_name = platform.node()
@@ -32,6 +33,8 @@ def login_to_teltonika():
         response.raise_for_status()
         if response.status_code == 200:
             token = response.json().get('data', {}).get('token')
+            #print(token)
+            return token
         else:
             print('Failed to authenticate with Teltonika device')
             return None
@@ -44,6 +47,7 @@ def get_gps_data():
     if token is None:
         token = login_to_teltonika()
         if token is None:
+            print("error could not get token")
             return None
     
     url = f'http://{DEVICE_IP}/ubus'
@@ -67,10 +71,15 @@ def get_gps_data():
         if len(result) > 1:
             stdout = result[1].get('stdout', '')
             latitude, longitude = map(float, stdout.strip().split())
-            if latitude == 0 and longitude == 0:
-                print("GPS values are 0 and 0, likely no GPS")
-                return None
-            return {"latitude": latitude, "longitude": longitude}
+            try:
+                latitude, longitude = map(float, stdout.strip().split())
+                if latitude == 0 and longitude == 0:
+                    print("GPS values are 0 and 0, likely no GPS")
+                    return {"latitude": None, "longitude": None}
+                return {"latitude": latitude, "longitude": longitude}
+            except ValueError:
+                print("Error: Could not parse latitude and longitude from stdout")
+                return {"latitude": None, "longitude": None}
         else:
             print('Unexpected response structure from Teltonika device')
             return None
