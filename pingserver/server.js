@@ -205,7 +205,7 @@ function cleanupOldLogs() {
 
 // Schedule the cleanup function to run daily
 //setInterval(cleanupOldLogs, 12 * 60 * 60 * 1000); // Every 12 hours
-//setInterval(cleanupOldLogs, 1 * 60 * 1000); // 
+setInterval(cleanupOldLogs, 1 * 60 * 1000); // 
 
 // Start the server
 app.listen(port, '0.0.0.0', () => {
