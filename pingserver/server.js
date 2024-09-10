@@ -184,6 +184,9 @@ function convertToDecimal(value, direction) {
   if (direction === 'S') {
     decimal = -decimal;
   }
+  if (direction === 'W') {
+    decimal = -decimal;
+  }
 
   return decimal.toFixed(6); // Limit to 6 decimal places for precision
 }
