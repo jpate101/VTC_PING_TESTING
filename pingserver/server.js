@@ -54,7 +54,7 @@ app.post('/ping', (req, res) => {
 // Middleware to parse raw text data
 app.use(express.text({ type: 'application/vnd.teltonika.nmea' }));
 app.post('/gps', (req, res) => {
-/*
+
   //imei formatting 
   let modifiedUrl = req.url.substring(5);
 
@@ -98,15 +98,15 @@ app.post('/gps', (req, res) => {
         //break;
       // Add more cases for other sentence types if needed
     }
-  });*/
+  });
 
 
   logger.info({
     type: '/GPS',
     body: req.body,
-    //imei: modifiedUrl,
-    //latitude: latitude,
-    //longitude: longitude
+    imei: modifiedUrl,
+    latitude: latitude,
+    longitude: longitude
   });
 
   // Do not send any response
