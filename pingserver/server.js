@@ -40,7 +40,7 @@ app.post('/ping', (req, res) => {
   const logEntry = {
     timestamp: timestamp,
     systemName: systemName,
-    message: 'Ping received',
+    type: 'Ping',
     latitude: latitude,
     longitude: longitude
   };
