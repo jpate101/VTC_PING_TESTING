@@ -89,7 +89,12 @@ app.post('/gps', (req, res) => {
         if ( parts[5] == 'W') {
           longitude = -longitude;
         }
-        altitude = parts[9]
+        altitude = parts[9];
+        console.log("_____________");
+        console.log(parts);
+
+
+        console.log("--------------");
         break;
     }
   });
