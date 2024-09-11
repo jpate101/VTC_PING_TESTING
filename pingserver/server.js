@@ -90,24 +90,18 @@ app.post('/gps', (req, res) => {
           longitude = -longitude;
         }
         altitude = parts[9]
-
-        console.log(parts);
-        console.log("-----");
-        console.log(parts[4]);
-        console.log(parts[5]);
-        console.log("----------");
         break;
     }
   });
 
 
   logger.info({
-    type: '/GPS',
+    type: 'GPS',
     //body: req.body,
     imei: modifiedUrl,
     latitude: latitude,
     longitude: longitude,
-    //altitude: altitude
+    altitude: altitude
   });
 
   // Do not send any response
