@@ -68,6 +68,8 @@ app.post('/gps', (req, res) => {
     modifiedUrl = modifiedUrl.substring(0, ampIndex);
   }
 
+  modifiedUrl = modifiedUrl.substring(5);
+
   // 
   let time = 'Unknown';
   let latitude = 'Unknown';
