@@ -90,11 +90,11 @@ app.post('/gps', (req, res) => {
           longitude = -longitude;
         }
         altitude = parts[9];
-        console.log("_____________");
-        console.log(parts);
+        //console.log("_____________");
+        //console.log(parts);
 
 
-        console.log("--------------");
+        //console.log("--------------");
         break;
     }
   });
