@@ -59,7 +59,7 @@ app.post('/ping', (req, res) => {
 app.use(express.text({ type: 'application/vnd.teltonika.nmea' }));
 
 app.post('/gps', (req, res) => {
-  /*
+  
   //imei formatting 
   let modifiedUrl = req.url.substring(5);
 
@@ -99,14 +99,14 @@ app.post('/gps', (req, res) => {
         break;
     }
   });
-*/
+
 
   logger.info({
     type: '/GPS',
-    body: req.body,
-    //imei: modifiedUrl,
-    //latitude: latitude,
-    //longitude: longitude,
+    //body: req.body,
+    imei: modifiedUrl,
+    latitude: latitude,
+    longitude: longitude,
     //altitude: altitude
   });
 
