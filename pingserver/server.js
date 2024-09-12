@@ -41,13 +41,15 @@ app.post('/ping', (req, res) => {
   const latitude = req.body.latitude || 'Unknown';
   const longitude = req.body.longitude || 'Unknown';
   const diskUsage = req.body.diskUsage || {};
+  const webpageStatus = req.body.webpageStatus || {};
   const logEntry = {
     timestamp: timestamp,
     systemName: systemName,
     type: 'Ping',
     latitude: latitude,
     longitude: longitude,
-    diskUsage: diskUsage
+    diskUsage: diskUsage,
+    CameraAvailability: webpageStatus
   };
 
   // Log entry using Winston

@@ -12,6 +12,13 @@ PASSWORD = 'MudM45t3r'
 PING_URL = "https://vtc-ping-testing.onrender.com/ping"
 #PING_URL = "http://192.168.20.45:3000/ping"
 
+IP_ADDRESSES = [
+    "http://192.168.1.101/",
+    "http://192.168.1.103/",
+    "http://192.168.1.105/",
+    "http://192.168.1.107/"
+]
+
 # Retrieve the computer name
 computer_name = platform.node()
 
@@ -98,7 +105,21 @@ def get_disk_usage():
         }
     return disk_usage
 
-def send_ping(url, computer_name, gps_data, disk_usage):
+
+def check_webpage_availability(urls):
+    results = {}
+    for url in urls:
+        try:
+            response = requests.get(url, timeout=5)  # 5 seconds timeout
+            if response.status_code == 200:
+                results[url] = 'Online'
+            else:
+                results[url] = 'Offline'
+        except requests.RequestException:
+            results[url] = 'Offline'
+    return results
+
+def send_ping(url, computer_name, gps_data, disk_usage, webpage_status ):
     body = {
         "MSG type": "Ping",
         "timestamp": datetime.now(timezone.utc).isoformat(),
@@ -106,7 +127,8 @@ def send_ping(url, computer_name, gps_data, disk_usage):
         "message": f"Ping from {computer_name}",
         "latitude": gps_data.get('latitude'),
         "longitude": gps_data.get('longitude'),
-        "diskUsage": disk_usage
+        "diskUsage": disk_usage,
+        "webpageStatus": webpage_status
     }
 
     headers = {"Content-Type": "application/json"}
@@ -123,5 +145,6 @@ def send_ping(url, computer_name, gps_data, disk_usage):
 while True:
     gps_data = get_gps_data()
     disk_usage = get_disk_usage()
-    send_ping(PING_URL, computer_name, gps_data or {}, disk_usage)
+    webpage_status = check_webpage_availability(IP_ADDRESSES)
+    send_ping(PING_URL, computer_name, gps_data or {}, disk_usage, webpage_status)
     time.sleep(60)
