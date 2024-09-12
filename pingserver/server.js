@@ -3,10 +3,12 @@ const path = require('path');
 const fs = require('fs');
 const winston = require('winston');
 const querystring = require('querystring'); 
+const cors = require('cors');
 
 const app = express();
 const port = 3000;
 const logFilePath = path.join(__dirname, 'ping_log.txt');
+
 
 
 // Set up Winston logger
@@ -31,6 +33,7 @@ const logger = winston.createLogger({
 
 // Middleware to parse JSON bodies
 app.use(express.json());
+app.use(cors()); // Enable CORS for all routes
 
 app.post('/ping', (req, res) => {
   const timestamp = new Date().toISOString();
