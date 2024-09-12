@@ -44,8 +44,8 @@ def login_to_teltonika():
 
 def get_gps_data():
     global token
+    token = login_to_teltonika()
     if token is None:
-        token = login_to_teltonika()
         if token is None:
             print("error could not get token")
             return None

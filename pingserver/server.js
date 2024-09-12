@@ -106,9 +106,9 @@ app.post('/gps', (req, res) => {
     type: 'GPS',
     //body: req.body,
     imei: modifiedUrl,
-    latitude: latitude,
-    longitude: longitude,
-    altitude: altitude
+    latitude: parseFloat(latitude),
+    longitude: parseFloat(longitude),
+    altitude: parseFloat(altitude)
   });
 
   // Do not send any response
