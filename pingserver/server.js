@@ -193,8 +193,8 @@ function cleanupOldLogs() {
     const filteredLogs = logs.filter(log => {
       const logTime = new Date(log.timestamp);
       const age = now - logTime;
-      //return age <= 24 * 60 * 60 * 1000; // last day of data is kept
-      return age <= 2 * 60 * 60 * 1000; // last day of data is kept
+      return age <= 24 * 60 * 60 * 1000; // last day of data is kept
+      //return age <= 2 * 60 * 60 * 1000; // last day of data is kept
     });
 
     // Prepare the updated log data
