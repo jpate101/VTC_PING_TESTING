@@ -42,6 +42,7 @@ app.post('/ping', (req, res) => {
   const longitude = req.body.longitude || 'Unknown';
   const diskUsage = req.body.diskUsage || {};
   const webpageStatus = req.body.webpageStatus || {};
+  const signalLevels = req.body.signalLevels|| {};
   const logEntry = {
     timestamp: timestamp,
     systemName: systemName,
@@ -49,7 +50,8 @@ app.post('/ping', (req, res) => {
     latitude: latitude,
     longitude: longitude,
     diskUsage: diskUsage,
-    CameraAvailability: webpageStatus
+    CameraAvailability: webpageStatus,
+    signalLevels: signalLevels
   };
 
   // Log entry using Winston

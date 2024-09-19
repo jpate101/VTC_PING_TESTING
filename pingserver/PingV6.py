@@ -93,6 +93,7 @@ def get_gps_data():
 
 def get_signal_levels():
     global token
+    print(token)
     url = f'http://{DEVICE_IP}/ubus'
     headers = {}
     payload = {
@@ -133,6 +134,7 @@ def parse_signal_levels(stdout):
             signal_levels['SINR'] = int(line.split(': ')[1])
         elif 'RSRQ' in line:
             signal_levels['RSRQ'] = int(line.split(': ')[1])
+    print(signal_levels)
     return signal_levels
 
 def get_disk_usage():
@@ -176,6 +178,7 @@ def send_ping(url, computer_name, gps_data, disk_usage, webpage_status, signal_l
 
     try:
         # Send the HTTP POST request
+        print(body)
         response = requests.post(url, data=json.dumps(body), headers=headers)
         response.raise_for_status()
     except requests.RequestException as e:
