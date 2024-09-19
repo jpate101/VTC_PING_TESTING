@@ -43,6 +43,8 @@ app.post('/ping', (req, res) => {
   const diskUsage = req.body.diskUsage || {};
   const webpageStatus = req.body.webpageStatus || {};
   const signalLevels = req.body.signalLevels|| {};
+  console.log(req.body)
+  console.log(signalLevels)
   const logEntry = {
     timestamp: timestamp,
     systemName: systemName,
