@@ -53,7 +53,7 @@ app.post('/ping', (req, res) => {
     longitude: longitude,
     diskUsage: diskUsage,
     CameraAvailability: webpageStatus,
-    signalLevels: signalLevels
+    signalLevels: req.body.signalLevels
   };
 
   // Log entry using Winston
