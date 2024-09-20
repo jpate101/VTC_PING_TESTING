@@ -158,7 +158,10 @@ def check_webpage_availability(urls):
             results[url] = 'Offline'
     return results
 
-def send_ping(url, computer_name, gps_data, disk_usage, webpage_status, signal_levels):
+def get_cpu_usage():
+    return psutil.cpu_percent(interval=1)  # Get CPU usage as a percentage
+
+def send_ping(url, computer_name, gps_data, disk_usage, webpage_status, signal_levels, cpu_usage):
     body = {
         "MSG type": "Ping",
         "timestamp": datetime.now(timezone.utc).isoformat(),
@@ -168,7 +171,8 @@ def send_ping(url, computer_name, gps_data, disk_usage, webpage_status, signal_l
         "longitude": gps_data.get('longitude'),
         "diskUsage": disk_usage,
         "webpageStatus": webpage_status,
-        "signalLevels": signal_levels  
+        "signalLevels": signal_levels,
+        "cpuUsage": cpu_usage  
     }
 
     headers = {"Content-Type": "application/json"}
@@ -186,5 +190,6 @@ while True:
     signal_levels = get_signal_levels()  # Fetch the signal levels
     disk_usage = get_disk_usage()
     webpage_status = check_webpage_availability(IP_ADDRESSES)
-    send_ping(PING_URL, computer_name, gps_data or {}, disk_usage, webpage_status, signal_levels or {})
+    cpu_usage = get_cpu_usage()
+    send_ping(PING_URL, computer_name, gps_data or {}, disk_usage, webpage_status, signal_levels or {},cpu_usage)
     time.sleep(60)
