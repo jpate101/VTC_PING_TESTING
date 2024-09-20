@@ -70,49 +70,50 @@ app.post('/ping', (req, res) => {
 app.use(express.text({ type: 'application/vnd.teltonika.nmea' }));
 
 app.post('/gps', (req, res) => {
-  
-  //imei formatting 
+  // Extract IMEI from the URL
   let modifiedUrl = req.url.substring(5);
-
   const ampIndex = modifiedUrl.indexOf('&');
   if (ampIndex !== -1) {
     modifiedUrl = modifiedUrl.substring(0, ampIndex);
   }
-
   modifiedUrl = modifiedUrl.substring(5);
 
-  // 
-  let time = 'Unknown';
+  // Initialize variables
   let latitude = 'Unknown';
   let longitude = 'Unknown';
   let altitude = 'Unknown';
 
-  //
+  // Split the body into sentences
   const sentences = req.body.split('\n').filter(sentence => sentence.trim().startsWith('$'));
+  
   sentences.forEach(sentence => {
     const parts = sentence.split(',');
     const type = sentence.substring(1, 6); // Extract the sentence type, e.g., 'GPGGA'
 
     switch (type) {
       case 'GPGGA': // Global Positioning System Fix Data
-        time = parts[1];
-        latitude = convertToDecimal(parts[2], parts[3]);
+        // Convert latitude
+        const latDegrees = parseFloat(parts[2].substring(0, 2));
+        const latMinutes = parseFloat(parts[2].substring(2));
+        latitude = latDegrees + (latMinutes / 60);
+        if (parts[3] === 'S') {
+          latitude = -latitude;
+        }
 
-        longitude = parts[4]/100;
-        if ( parts[5] == 'W') {
+        // Convert longitude
+        const lonDegrees = parseFloat(parts[4].substring(0, 3));
+        const lonMinutes = parseFloat(parts[4].substring(3));
+        longitude = lonDegrees + (lonMinutes / 60);
+        if (parts[5] === 'W') {
           longitude = -longitude;
         }
-        altitude = parts[9];
-        //console.log("_____________");
-        //console.log(parts);
 
-
-        //console.log("--------------");
+        altitude = parseFloat(parts[9]);
         break;
     }
   });
 
-
+  // Log the results
   logger.info({
     type: 'GPS',
     body: req.body,
@@ -122,7 +123,7 @@ app.post('/gps', (req, res) => {
     altitude: parseFloat(altitude)
   });
 
-  // Do not send any response
+  // No response sent
 });
 
 // Convert latitude/longitude from NMEA format to decimal degrees
