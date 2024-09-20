@@ -115,7 +115,7 @@ app.post('/gps', (req, res) => {
 
   logger.info({
     type: 'GPS',
-    //body: req.body,
+    body: req.body,
     imei: modifiedUrl,
     latitude: parseFloat(latitude),
     longitude: parseFloat(longitude),
