@@ -116,7 +116,7 @@ app.post('/gps', (req, res) => {
   // Log the results
   logger.info({
     type: 'GPS',
-    body: req.body,
+    //body: req.body,
     imei: modifiedUrl,
     latitude: parseFloat(latitude),
     longitude: parseFloat(longitude),
@@ -198,7 +198,7 @@ function cleanupOldLogs() {
     const filteredLogs = logs.filter(log => {
       const logTime = new Date(log.timestamp);
       const age = now - logTime;
-      return age <= 24 * 60 * 60 * 1000; // last day of data is kept
+      return age <= 72 * 60 * 60 * 1000; // last day of data is kept
       //return age <= 2 * 60 * 60 * 1000; // last day of data is kept
     });
 
@@ -219,8 +219,8 @@ function cleanupOldLogs() {
 }
 
 // Schedule the cleanup function to run daily
-//setInterval(cleanupOldLogs, 12 * 60 * 60 * 1000); // Every 12 hours
-setInterval(cleanupOldLogs, 60 * 60 * 1000); // 
+setInterval(cleanupOldLogs, 12 * 60 * 60 * 1000); // Every 12 hours
+//setInterval(cleanupOldLogs, 60 * 60 * 1000); // 
 
 // Start the server
 app.listen(port, '0.0.0.0', () => {
