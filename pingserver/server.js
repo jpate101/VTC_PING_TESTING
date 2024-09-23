@@ -44,6 +44,7 @@ app.post('/ping', (req, res) => {
   const webpageStatus = req.body.webpageStatus || {};
   const signalLevels = req.body.signalLevels|| {};
   const cpuUsage= req.body.cpuUsage|| {};
+  const latestLogEvent= req.body.LatestLogEvent|| {};
   
   //console.log(req.body)
   //console.log(signalLevels)

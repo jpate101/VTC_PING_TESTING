@@ -189,7 +189,7 @@ def send_ping(url, computer_name, gps_data, disk_usage, webpage_status, signal_l
         "webpageStatus": webpage_status,
         "signalLevels": signal_levels,
         "cpuUsage": cpu_usage,
-        "Latest Log Event" : { "Id" : event_id, "time":event_timestamp}
+        "LatestLogEvent" : { "Id" : event_id, "time":event_timestamp}
     }
 
     headers = {"Content-Type": "application/json"}
