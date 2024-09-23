@@ -4,6 +4,8 @@ import platform
 import time
 from datetime import datetime, timezone
 import psutil 
+import subprocess
+import win32evtlog
 
 # Configuration
 DEVICE_IP = '192.168.1.1'
@@ -158,10 +160,24 @@ def check_webpage_availability(urls):
             results[url] = 'Offline'
     return results
 
-def get_cpu_usage():
-    return psutil.cpu_percent(interval=1)  # Get CPU usage as a percentage
+#def get_cpu_usage():
+#    return psutil.cpu_percent(interval=1)  # Get CPU usage as a percentage
 
-def send_ping(url, computer_name, gps_data, disk_usage, webpage_status, signal_levels, cpu_usage):
+def get_cpu_usage():
+    # Use subprocess with CREATE_NO_WINDOW to avoid showing a console window
+    result = subprocess.run(['wmic', 'cpu', 'get', 'loadpercentage'], 
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE, 
+                            creationflags=subprocess.CREATE_NO_WINDOW)
+    
+    output = result.stdout.decode().strip().splitlines()
+    
+    # Filter out empty lines and non-numeric lines
+    load_percentages = [line for line in output if line.isdigit()]
+    
+    return int(load_percentages[-1]) if load_percentages else None  # Return the last value or None if no valid values
+
+
+def send_ping(url, computer_name, gps_data, disk_usage, webpage_status, signal_levels, cpu_usage, event_id, event_timestamp):
     body = {
         "MSG type": "Ping",
         "timestamp": datetime.now(timezone.utc).isoformat(),
@@ -172,7 +188,8 @@ def send_ping(url, computer_name, gps_data, disk_usage, webpage_status, signal_l
         "diskUsage": disk_usage,
         "webpageStatus": webpage_status,
         "signalLevels": signal_levels,
-        "cpuUsage": cpu_usage  
+        "cpuUsage": cpu_usage,
+        "Latest Log Event" : { "Id" : event_id, "time":event_timestamp}
     }
 
     headers = {"Content-Type": "application/json"}
@@ -183,7 +200,34 @@ def send_ping(url, computer_name, gps_data, disk_usage, webpage_status, signal_l
         response.raise_for_status()
     except requests.RequestException as e:
         print(f'Error sending ping: {e}')
+        
+def check_event_log():
+    log_type = 'Microsoft-Windows-EventCreate/Custom Views'  # Adjust as needed
+    latest_event = None
+    source = 'eventCreate'  # Hard-coded event source
 
+    try:
+        hand = win32evtlog.OpenEventLog(None, log_type)
+        
+        total_events = win32evtlog.GetNumberOfEventLogRecords(hand)
+        # Read events from the log
+        for i in range(total_events):
+            event = win32evtlog.ReadEventLog(hand, win32evtlog.EVENTLOG_FORWARDS_READ | win32evtlog.EVENTLOG_SEQUENTIAL_READ, 0)
+            if event:
+                for e in event:
+                    if e.SourceName == source:
+                        # Keep track of the latest event
+                        if not latest_event or e.TimeGenerated > latest_event.TimeGenerated:
+                            latest_event = e
+
+        if latest_event:
+            return latest_event.EventID, latest_event.TimeGenerated.strftime("%Y-%m-%dT%H:%M:%S.%fZ")  # Format timestamp
+    except Exception as e:
+        print(f"Error reading event log: {e}")
+    finally:
+        win32evtlog.CloseEventLog(hand)
+
+    return None, None  # Return None if no event found
 # Run the function every 60 seconds
 while True:
     gps_data = get_gps_data()
@@ -191,5 +235,6 @@ while True:
     disk_usage = get_disk_usage()
     webpage_status = check_webpage_availability(IP_ADDRESSES)
     cpu_usage = get_cpu_usage()
-    send_ping(PING_URL, computer_name, gps_data or {}, disk_usage, webpage_status, signal_levels or {},cpu_usage)
+    event_id, event_timestamp = check_event_log()
+    send_ping(PING_URL, computer_name, gps_data or {}, disk_usage, webpage_status, signal_levels or {},cpu_usage, event_id, event_timestamp)
     time.sleep(60)

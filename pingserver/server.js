@@ -44,6 +44,7 @@ app.post('/ping', (req, res) => {
   const webpageStatus = req.body.webpageStatus || {};
   const signalLevels = req.body.signalLevels|| {};
   const cpuUsage= req.body.cpuUsage|| {};
+  
   //console.log(req.body)
   //console.log(signalLevels)
   const logEntry = {
@@ -55,7 +56,11 @@ app.post('/ping', (req, res) => {
     diskUsage: diskUsage,
     CameraAvailability: webpageStatus,
     signalLevels: signalLevels,
-    cpuUsage: cpuUsage
+    cpuUsage: cpuUsage,
+    LatestLogEvent: {
+      Id: latestLogEvent.Id || 'Unknown',
+      time: latestLogEvent.time || 'Unknown'
+    }
   };
 
   // Log entry using Winston
