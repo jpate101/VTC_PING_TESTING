@@ -178,6 +178,7 @@ def get_cpu_usage():
 
 
 def send_ping(url, computer_name, gps_data, disk_usage, webpage_status, signal_levels, cpu_usage, event_id, event_timestamp):
+    print(event_id, event_timestamp)
     body = {
         "MSG type": "Ping",
         "timestamp": datetime.now(timezone.utc).isoformat(),
@@ -202,14 +203,17 @@ def send_ping(url, computer_name, gps_data, disk_usage, webpage_status, signal_l
         print(f'Error sending ping: {e}')
         
 def check_event_log():
-    log_type = 'Microsoft-Windows-EventCreate/Custom Views'  # Adjust as needed
+    log_type = 'Microsoft-Windows-EventCreate/Custom Views/C185 Detection'  # Adjust as needed
     latest_event = None
-    source = 'eventCreate'  # Hard-coded event source
+    source = 'EventCreate'  # Hard-coded event source
 
     try:
         hand = win32evtlog.OpenEventLog(None, log_type)
         
         total_events = win32evtlog.GetNumberOfEventLogRecords(hand)
+        
+        print(hand)
+        print(total_events)
         # Read events from the log
         for i in range(total_events):
             event = win32evtlog.ReadEventLog(hand, win32evtlog.EVENTLOG_FORWARDS_READ | win32evtlog.EVENTLOG_SEQUENTIAL_READ, 0)
