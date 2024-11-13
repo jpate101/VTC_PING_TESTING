@@ -70,8 +70,25 @@ public class UniqueWindowHelper
 "@ -Language CSharp
 
 # Define the path to the application and the window title
-#$applicationPath = "C:\Program Files (x86)\TBS Electronics\Dashboard\2.0\Dashboard.exe"
+$applicationPath = "C:\Program Files (x86)\TBS Electronics\Dashboard\2.0\Dashboard.exe"
 $windowTitle = "TBS Electronics - Dashboard"
+
+# Define the process name (no file extension)
+$processName = "Dashboard"
+
+# Check if the application is already running
+$runningProcess = Get-Process -Name $processName -ErrorAction SilentlyContinue
+
+# If the process is not running, start it
+if ($runningProcess -eq $null) {
+    Write-Output "Starting the application..."
+    Start-Process -FilePath $applicationPath
+
+    # Sleep to allow the application to start before proceeding (adjust timing as needed)
+    Start-Sleep -Seconds 20
+} else {
+    Write-Output "The application is already running."
+}
 
 # Load the necessary .NET assembly for SendKeys
 Add-Type -AssemblyName System.Windows.Forms
